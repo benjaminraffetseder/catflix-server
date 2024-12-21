@@ -1,8 +1,10 @@
-import { MikroOrmModule } from '@mikro-orm/nestjs';
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { typeOrmConfig } from './config/typeorm.config';
+import { ResponseMiddleware } from './middleware/response.middleware';
 
 @Module({
   imports: [
@@ -10,9 +12,13 @@ import { AppService } from './app.service';
       isGlobal: true,
       envFilePath: '.env',
     }),
-    MikroOrmModule.forRoot(),
+    TypeOrmModule.forRoot(typeOrmConfig),
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(ResponseMiddleware).forRoutes('*');
+  }
+}
