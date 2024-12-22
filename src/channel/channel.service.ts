@@ -4,19 +4,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { CategoryRepository } from '../video/repositories/category.repository';
 import { VideoRepository } from '../video/repositories/video.repository';
 import { YouTubeService } from '../youtube/youtube.service';
+import { YOUTUBE_CHANNELS } from './config/channel.config';
 import { GetChannelsDto } from './dto/get-channels.dto';
 import { ChannelRepository } from './repositories/channel.repository';
-
-const CHANNELS = [
-  'fourpawstv',
-  'PaulDinningVideosforCats',
-  'BirderKing',
-  'BirdsandSquirrelsWonderl',
-  'PaulBirder',
-  'patsysgarden',
-  'CatFlixVideosforCats',
-  'RedSquirrelStudios',
-] as const;
 
 @Injectable()
 export class ChannelService {
@@ -51,7 +41,7 @@ export class ChannelService {
         return;
       }
 
-      for (const channelName of CHANNELS) {
+      for (const channelName of YOUTUBE_CHANNELS) {
         try {
           await this.fetchVideosForChannel(channelName);
         } catch (channelError) {
