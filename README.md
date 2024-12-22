@@ -94,6 +94,21 @@ $ pnpm run migration:revert
 $ pnpm run migration:show
 ```
 
+## Database Seeding
+
+The project includes a seeding system to help maintain consistent development data. For detailed information about seeding, see [Database Seeders](src/database/seeders/README.md).
+
+```bash
+# Seed the database with initial data
+$ pnpm run seed
+
+# Clean the database
+$ pnpm run seed:clean
+
+# Export current data to CSV files
+$ pnpm run seed:export
+```
+
 ## API Documentation
 
 Once the server is running, you can access the Swagger documentation at:

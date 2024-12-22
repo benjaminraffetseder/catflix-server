@@ -45,7 +45,7 @@ export class YouTubeService {
   private readonly youtube;
 
   /** Maximum number of quota units allowed per day */
-  private static readonly DAILY_QUOTA_LIMIT = 2000;
+  private static readonly DAILY_QUOTA_LIMIT = 5000;
   /** Cost in quota units for a single search.list operation */
   private static readonly SEARCH_COST = 100;
   /** Cost in quota units for a single video in videos.list operation */
