@@ -8,20 +8,24 @@ import { YouTubeService } from './services/youtube.service';
 
 const CATEGORIES = [
   {
-    title: 'Featured',
-    query: 'cats entertainment',
-  },
-  {
     title: 'Birds',
-    query: 'birds for cats to watch',
+    query: 'videos for cats to watch birds',
   },
   {
     title: 'Fish',
     query: 'aquarium for cats',
   },
   {
-    title: 'Squirrels',
-    query: 'squirrels for cats to watch',
+    title: 'Mice',
+    query: 'mice to watch for cats',
+  },
+  {
+    title: 'Rabbits',
+    query: 'rabbits to watch for cats',
+  },
+  {
+    title: 'Forests',
+    query: 'forest movies for cats',
   },
 ] as const;
 
@@ -159,6 +163,14 @@ export class VideoService {
     return this.videoRepository.findOne({
       where: { id },
       relations: ['category'],
+      select: {
+        id: true,
+        title: true,
+        uploadDate: true,
+        length: true,
+        category: { id: true, title: true },
+        youtubeId: true,
+      },
     });
   }
 
