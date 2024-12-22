@@ -13,20 +13,6 @@ export const typeOrmConfig: TypeOrmModuleOptions = {
   entities: ['dist/**/*.entity.js'],
   migrations: ['dist/migrations/*.js'],
   synchronize: false,
-  dropSchema: false,
-  ssl:
-    process.env.NODE_ENV === 'production'
-      ? { rejectUnauthorized: false }
-      : false,
-  logging: process.env.NODE_ENV !== 'production',
-  maxQueryExecutionTime: 1000,
-  poolSize: 20,
-  retryAttempts: 3,
-  retryDelay: 3000,
-  connectTimeoutMS: 10000,
-  extra: {
-    statement_timeout: 10000,
-  },
 };
 
 /**
