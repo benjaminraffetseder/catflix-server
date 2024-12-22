@@ -6,6 +6,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ChannelModule } from './channel/channel.module';
 import { typeOrmConfig } from './config/typeorm.config';
+import { SeederModule } from './database/seeders/seeder.module';
 import { VideoModule } from './video/video.module';
 
 @Module({
@@ -15,6 +16,7 @@ import { VideoModule } from './video/video.module';
     ScheduleModule.forRoot(),
     VideoModule,
     ChannelModule,
+    SeederModule,
   ],
   controllers: [AppController],
   providers: [AppService],

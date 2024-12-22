@@ -13,6 +13,21 @@ export class SeederService {
 
   constructor(private readonly dataSource: DataSource) {}
 
+  async needsSeeding(): Promise<boolean> {
+    try {
+      const categoryCount = await this.dataSource
+        .getRepository(Category)
+        .count();
+      const videoCount = await this.dataSource.getRepository(Video).count();
+      const channelCount = await this.dataSource.getRepository(Channel).count();
+
+      return categoryCount === 0 || videoCount === 0 || channelCount === 0;
+    } catch (error) {
+      this.logger.error('Error checking if database needs seeding:', error);
+      return false;
+    }
+  }
+
   async seed() {
     try {
       await this.seedCategories();
@@ -71,7 +86,7 @@ export class SeederService {
             categories
               .map(
                 (c) =>
-                  `${c.id},${c.title},${c.createdAt.toISOString()},${c.updatedAt.toISOString()}`,
+                  `${c.id},${c.title},${c.createdAt.getTime()},${c.updatedAt.getTime()}`,
               )
               .join('\n'),
         );
@@ -82,13 +97,13 @@ export class SeederService {
         const channelsPath = path.join(dataDir, 'channels.csv');
         fs.writeFileSync(
           channelsPath,
-          'id,youtubeChannelId,name,description,thumbnailUrl,instagramUrl,twitterUrl,facebookUrl,websiteUrl,isActive,lastFetchedAt,createdAt\n' +
+          'id,youtubeChannelId,name,description,thumbnailUrl,isActive,lastFetchedAt,createdAt\n' +
             channels
               .map(
                 (c) =>
                   `${c.id},${c.youtubeChannelId},${c.name},${c.description || ''},${
                     c.thumbnailUrl || ''
-                  },${c.isActive},${c.lastFetchedAt.toISOString()},${c.createdAt.toISOString()}`,
+                  },${c.isActive},${c.lastFetchedAt.getTime()},${c.createdAt.getTime()}`,
               )
               .join('\n'),
         );
@@ -107,7 +122,7 @@ export class SeederService {
                     v.channelId || ''
                   },${v.uploadDate.toISOString()},${v.length},${
                     v.youtubeId
-                  },${v.createdAt.toISOString()},${v.updatedAt.toISOString()}`,
+                  },${v.createdAt.getTime()},${v.updatedAt.getTime()}`,
               )
               .join('\n'),
         );
@@ -143,8 +158,8 @@ export class SeederService {
       const category = this.dataSource.getRepository(Category).create({
         id: record.id,
         title: record.title,
-        createdAt: new Date(record.createdAt),
-        updatedAt: new Date(record.updatedAt),
+        createdAt: new Date(parseInt(record.createdAt)),
+        updatedAt: new Date(parseInt(record.updatedAt)),
       });
       await this.dataSource.getRepository(Category).save(category);
     }
@@ -176,8 +191,8 @@ export class SeederService {
         description: record.description,
         thumbnailUrl: record.thumbnailUrl,
         isActive: record.isActive === 'true',
-        lastFetchedAt: new Date(record.lastFetchedAt),
-        createdAt: new Date(record.createdAt),
+        lastFetchedAt: new Date(parseInt(record.lastFetchedAt)),
+        createdAt: new Date(parseInt(record.createdAt)),
       });
       await this.dataSource.getRepository(Channel).save(channel);
     }
@@ -211,8 +226,8 @@ export class SeederService {
         uploadDate: new Date(record.uploadDate),
         length: parseInt(record.length),
         youtubeId: record.youtubeId,
-        createdAt: new Date(record.createdAt),
-        updatedAt: new Date(record.updatedAt),
+        createdAt: new Date(parseInt(record.createdAt)),
+        updatedAt: new Date(parseInt(record.updatedAt)),
       });
       await this.dataSource.getRepository(Video).save(video);
     }
