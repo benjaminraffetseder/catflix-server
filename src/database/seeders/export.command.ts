@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { stringify } from 'csv-stringify/sync';
 import * as fs from 'fs';
 import { Command, CommandRunner } from 'nest-commander';
@@ -13,16 +13,24 @@ import { Video } from '../../video/entities/video.entity';
   description: 'Export database data to CSV files for seeding',
 })
 export class ExportCommand extends CommandRunner {
+  private readonly logger = new Logger(ExportCommand.name);
+
   constructor(private readonly dataSource: DataSource) {
     super();
   }
 
   private writeCsvFile<T>(filename: string, data: T[]): void {
-    const filePath = path.join(__dirname, 'data', filename);
+    const filePath = path.join(process.cwd(), 'data', filename);
     const csvContent = stringify(data, {
       header: true,
       quoted_string: true,
     });
+
+    const dataDir = path.join(process.cwd(), 'data');
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+
     fs.writeFileSync(filePath, csvContent);
   }
 
@@ -34,7 +42,7 @@ export class ExportCommand extends CommandRunner {
       });
 
       this.writeCsvFile('categories.csv', categories);
-      console.log('📝 Categories exported to CSV');
+      this.logger.log('📝 Categories exported to CSV');
 
       // Export videos
       const videos = await this.dataSource.getRepository(Video).find({
@@ -50,11 +58,11 @@ export class ExportCommand extends CommandRunner {
       });
 
       this.writeCsvFile('videos.csv', videos);
-      console.log('📝 Videos exported to CSV');
+      this.logger.log('📝 Videos exported to CSV');
 
-      console.log('✅ Database export completed');
+      this.logger.log('✅ Database export completed');
     } catch (error) {
-      console.error('❌ Database export failed:', error);
+      this.logger.error('❌ Database export failed:', error);
       throw error;
     }
   }
