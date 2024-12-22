@@ -1,12 +1,10 @@
 import {
   Controller,
   Get,
-  Headers,
   NotFoundException,
   Param,
   ParseUUIDPipe,
   Query,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { GetVideosDto } from './dto/get-videos.dto';
@@ -27,14 +25,6 @@ export class VideoController {
   @Get('categories')
   async getCategories() {
     return this.videoService.getCategories();
-  }
-
-  @Get('fetch')
-  async triggerFetchAndStore(@Headers('x-api-key') apiKey: string) {
-    if (apiKey !== this.configService.get('MANUAL_FETCH_API_KEY')) {
-      throw new UnauthorizedException('Invalid API key');
-    }
-    return this.videoService.triggerFetchAndStore();
   }
 
   @Get(':id')

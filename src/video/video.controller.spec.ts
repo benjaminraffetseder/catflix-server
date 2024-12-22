@@ -1,4 +1,4 @@
-import { NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { VideoController } from './video.controller';
@@ -79,35 +79,6 @@ describe('VideoController', () => {
 
       expect(result).toEqual(expectedCategories);
       expect(videoService.getCategories).toHaveBeenCalled();
-    });
-  });
-
-  describe('triggerFetchAndStore', () => {
-    it('should trigger fetch and store when valid API key is provided', async () => {
-      const apiKey = 'valid-key';
-      const expectedResult = {
-        message: 'Videos fetched and stored successfully.',
-      };
-
-      mockConfigService.get.mockReturnValue(apiKey);
-      mockVideoService.triggerFetchAndStore.mockResolvedValue(expectedResult);
-
-      const result = await controller.triggerFetchAndStore(apiKey);
-
-      expect(result).toEqual(expectedResult);
-      expect(configService.get).toHaveBeenCalledWith('MANUAL_FETCH_API_KEY');
-      expect(videoService.triggerFetchAndStore).toHaveBeenCalled();
-    });
-
-    it('should throw UnauthorizedException when invalid API key is provided', async () => {
-      const apiKey = 'invalid-key';
-
-      mockConfigService.get.mockReturnValue('valid-key');
-
-      await expect(controller.triggerFetchAndStore(apiKey)).rejects.toThrow(
-        UnauthorizedException,
-      );
-      expect(videoService.triggerFetchAndStore).not.toHaveBeenCalled();
     });
   });
 
