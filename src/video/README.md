@@ -6,11 +6,10 @@ The Video Module integrates with YouTube's API to fetch, store, and serve curate
 
 ## Features
 
-- Automated video fetching from YouTube
+- Manual video fetching from YouTube
 - Category-based video organization
 - RESTful API endpoints for video access
 - Quota management for YouTube API usage
-- Automatic daily content updates
 - Pagination and filtering support
 
 ## Technical Architecture
@@ -26,20 +25,15 @@ The Video Module integrates with YouTube's API to fetch, store, and serve curate
 ### Data Model
 
 #### Video Entity
-- UUID-based identification
-- YouTube metadata (ID, title, upload date, length)
-- Category association
 
-#### Category Entity
-- Predefined categories:
-  - Featured
-  - Birds
-  - Fish
-  - Squirrels
+- UUID-based identification
+- YouTube metadata (ID, title, description, upload date, length)
+- Category association
 
 ## API Endpoints
 
 ### GET /videos
+
 Retrieves a paginated list of videos with optional filtering.
 
 ```typescript
@@ -60,44 +54,30 @@ interface VideoResponse {
 ```
 
 Example:
+
 ```bash
-curl http://localhost:3000/videos?page=1&pageSize=20&categoryId=123
+curl http://localhost:3000/videos?page=1&pageSize=20&categoryId=483b0d37-9adf-4e24-ad77-717f15cd9884
 ```
 
 ### GET /videos/categories
+
 Returns all available categories with their video counts.
 
 Example:
+
 ```bash
 curl http://localhost:3000/videos/categories
 ```
 
 ### GET /videos/:id
+
 Retrieves a specific video by its UUID.
 
 Example:
+
 ```bash
-curl http://localhost:3000/videos/550e8400-e29b-41d4-a716-446655440000
+curl http://localhost:3000/videos/36d7322d-330c-4554-af4c-4e4a0a8e13ec
 ```
-
-### GET /videos/fetch
-Triggers manual video fetch process (requires API key).
-
-Example:
-```bash
-curl -H "x-api-key: YOUR_API_KEY" http://localhost:3000/videos/fetch
-```
-
-## Automated Tasks
-
-### Daily Video Fetch
-The module automatically fetches new videos daily at midnight UTC. This process:
-
-1. Checks YouTube API quota usage
-2. Iterates through predefined categories
-3. Fetches relevant videos for each category
-4. Updates existing videos or creates new entries
-5. Handles errors gracefully without stopping the entire process
 
 ## Error Handling
 
@@ -111,41 +91,46 @@ The module implements comprehensive error handling:
 ## Best Practices
 
 ### Rate Limiting
+
 - YouTube API quota monitoring
 - 90% quota threshold protection
 
 ### Data Consistency
+
 - Atomic video updates
 - Duplicate prevention via YouTube ID checking
 
 ### Performance
+
 - Paginated responses
 - Efficient database queries
-- Background job processing
 
 ## Configuration
 
 ### Environment Variables
+
 ```env
-MANUAL_FETCH_API_KEY=your_api_key_here
 YOUTUBE_API_KEY=your_youtube_api_key
 ```
 
 ## Usage Examples
 
 ### Filtering Videos by Date Range
+
 ```typescript
 const response = await fetch('/videos?uploadDateFrom=2023-01-01&uploadDateTo=2023-12-31');
 const videos = await response.json();
 ```
 
 ### Getting Videos from Specific Category
+
 ```typescript
 const response = await fetch('/videos?categoryId=bird-videos');
 const videos = await response.json();
 ```
 
 ### Implementing Custom Video Player
+
 ```typescript
 async function loadVideo(videoId: string) {
   const response = await fetch(`/videos/${videoId}`);
@@ -154,6 +139,7 @@ async function loadVideo(videoId: string) {
   return {
     youtubeId: video.youtubeId,
     title: video.title,
+    description: video.description,
     category: video.category.title
   };
 }
@@ -172,17 +158,17 @@ When contributing to this module:
 ## Technical Considerations
 
 ### Scalability
+
 - The module uses repository pattern for database abstraction
 - Implements pagination for large datasets
-- Uses background jobs for heavy processing
 
 ### Maintenance
-- Daily automated video fetching
-- Automatic cleanup of outdated entries
+
+- Manual video fetching
 - YouTube quota monitoring
 
 ### Security
-- API key protection for sensitive endpoints
+
 - Input validation using DTOs
 - Safe error handling without exposing internals
 
@@ -192,7 +178,7 @@ When contributing to this module:
 
 1. YouTube Quota Exceeded
    - Solution: Wait for quota reset or increase quota limit
-   
+
 2. Video Fetch Failures
    - Check YouTube API status
    - Verify API key validity

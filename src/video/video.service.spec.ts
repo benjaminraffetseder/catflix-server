@@ -1,8 +1,8 @@
 import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { YouTubeService } from '../youtube/youtube.service';
 import { CategoryRepository } from './repositories/category.repository';
 import { VideoRepository } from './repositories/video.repository';
-import { YouTubeService } from './services/youtube.service';
 import { VideoService } from './video.service';
 
 describe('VideoService', () => {
@@ -26,7 +26,6 @@ describe('VideoService', () => {
 
   const mockYouTubeService = {
     searchVideos: jest.fn(),
-    getCurrentQuotaUsage: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -99,6 +98,15 @@ describe('VideoService', () => {
       expect(videoRepository.findOne).toHaveBeenCalledWith({
         where: { id: videoId },
         relations: ['category'],
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          uploadDate: true,
+          length: true,
+          category: { id: true, title: true },
+          youtubeId: true,
+        },
       });
     });
   });
@@ -115,65 +123,6 @@ describe('VideoService', () => {
 
       expect(result).toEqual(mockCategories);
       expect(categoryRepository.getCategoriesWithVideoCount).toHaveBeenCalled();
-    });
-  });
-
-  describe('fetchAndStoreVideos', () => {
-    it('should skip fetching when quota is nearly exhausted', async () => {
-      mockYouTubeService.getCurrentQuotaUsage.mockReturnValue({
-        used: 9500,
-        total: 10000,
-      });
-
-      await service.fetchAndStoreVideos();
-
-      expect(youtubeService.searchVideos).not.toHaveBeenCalled();
-      expect(categoryRepository.findOrCreate).not.toHaveBeenCalled();
-    });
-
-    it('should fetch and store videos for each category', async () => {
-      mockYouTubeService.getCurrentQuotaUsage.mockReturnValue({
-        used: 5000,
-        total: 10000,
-      });
-
-      const mockCategory = { id: '1', title: 'Featured' };
-      const mockVideo = {
-        youtubeId: 'video1',
-        title: 'Test Video',
-        uploadDate: new Date(),
-        length: 120,
-      };
-
-      mockCategoryRepository.findOrCreate.mockResolvedValue(mockCategory);
-      mockYouTubeService.searchVideos.mockResolvedValue([mockVideo]);
-      mockVideoRepository.findByYoutubeId.mockResolvedValue(null);
-      mockVideoRepository.create.mockReturnValue(mockVideo);
-      mockVideoRepository.save.mockResolvedValue(mockVideo);
-
-      await service.fetchAndStoreVideos();
-
-      expect(youtubeService.getCurrentQuotaUsage).toHaveBeenCalled();
-      expect(categoryRepository.findOrCreate).toHaveBeenCalled();
-      expect(youtubeService.searchVideos).toHaveBeenCalled();
-      expect(videoRepository.create).toHaveBeenCalled();
-      expect(videoRepository.save).toHaveBeenCalled();
-    });
-  });
-
-  describe('triggerFetchAndStore', () => {
-    it('should trigger fetch and store process', async () => {
-      const expectedResult = {
-        message: 'Videos fetched and stored successfully.',
-      };
-
-      // Mock the fetchAndStoreVideos method
-      jest.spyOn(service, 'fetchAndStoreVideos').mockResolvedValue();
-
-      const result = await service.triggerFetchAndStore();
-
-      expect(result).toEqual(expectedResult);
-      expect(service.fetchAndStoreVideos).toHaveBeenCalled();
     });
   });
 });

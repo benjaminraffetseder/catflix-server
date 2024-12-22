@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import { Command, CommandRunner } from 'nest-commander';
 import * as path from 'path';
 import { DataSource } from 'typeorm';
+import { Channel } from '../../channel/entities/channel.entity';
 import { Category } from '../../video/entities/category.entity';
 import { Video } from '../../video/entities/video.entity';
 
@@ -44,16 +45,38 @@ export class ExportCommand extends CommandRunner {
       this.writeCsvFile('categories.csv', categories);
       this.logger.log('📝 Categories exported to CSV');
 
+      // Export channels
+      const channels = await this.dataSource.getRepository(Channel).find({
+        order: { name: 'ASC' },
+        select: [
+          'id',
+          'youtubeChannelId',
+          'name',
+          'description',
+          'thumbnailUrl',
+          'isActive',
+          'lastFetchedAt',
+          'createdAt',
+        ],
+      });
+
+      this.writeCsvFile('channels.csv', channels);
+      this.logger.log('📝 Channels exported to CSV');
+
       // Export videos
       const videos = await this.dataSource.getRepository(Video).find({
         order: { uploadDate: 'DESC' },
         select: [
           'id',
           'title',
+          'description',
           'categoryId',
+          'channelId',
           'uploadDate',
           'length',
           'youtubeId',
+          'createdAt',
+          'updatedAt',
         ],
       });
 

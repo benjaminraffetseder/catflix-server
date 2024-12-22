@@ -14,7 +14,6 @@ Catflix Server is a backend service built with NestJS that powers the Catflix pl
 - **API Integration**: YouTube Data API v3
 - **Documentation**: Swagger/OpenAPI
 - **Testing**: Jest
-- **Task Scheduling**: @nestjs/schedule with cron jobs
 
 ## Getting Started
 
@@ -29,31 +28,37 @@ Catflix Server is a backend service built with NestJS that powers the Catflix pl
 ### Environment Setup
 
 1. Clone the repository:
+
 ```bash
-$ git clone https://github.com/benjaminraffetseder/catflix-server.git
-$ cd catflix-server
+git clone https://github.com/benjaminraffetseder/catflix-server.git
+cd catflix-server
 ```
 
 2. Install dependencies:
+
 ```bash
-$ pnpm install
+pnpm install
 ```
 
 3. Configure environment variables:
    - Copy `.env.example` to `.env`
+
    ```bash
-   $ cp .env.example .env
-   ```	
+   cp .env.example .env
+   ```
+
    - Fill in the required variables:
+
      ```
      YOUTUBE_API_KEY=your_youtube_api_key
      DATABASE_URL=postgresql://user:password@localhost:5432/catflix
      PORT=3000
      NODE_ENV=development
-     MANUAL_FETCH_API_KEY=your_api_key_for_manual_fetching
+     MANUAL_FETCH_API_KEY=change-me-please
      ```
 
 4. Set up the database:
+
 ```bash
 # Run TypeORM migrations
 $ pnpm run migration:run
@@ -112,11 +117,13 @@ $ pnpm run seed:export
 ## API Documentation
 
 Once the server is running, you can access the Swagger documentation at:
+
 ```
 http://localhost:3000/api
 ```
 
 You can also download the JSON documentation at:
+
 ```
 http://localhost:3000/api-json
 ```
@@ -129,8 +136,8 @@ src/
 ├── entities/        # TypeORM entities
 ├── migrations/      # Database migrations
 ├── middleware/      # HTTP middleware
-├── video/           # Video module (Fetching and storing YT video data)
-└── main.ts          # Application entry point
+├── video/          # Video module (YouTube video data management)
+└── main.ts         # Application entry point
 ```
 
 ## Contributing

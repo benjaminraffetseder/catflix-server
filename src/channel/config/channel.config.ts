@@ -1,0 +1,18 @@
+export const YOUTUBE_CHANNELS = [
+  'fourpawstv',
+  'PaulDinningVideosforCats',
+  'BirderKing',
+  'BirdsandSquirrelsWonderl',
+  'PaulBirder',
+  'patsysgarden',
+  'CatFlixVideosforCats',
+  'RedSquirrelStudios',
+] as const;
+
+export type YoutubeChannel = (typeof YOUTUBE_CHANNELS)[number];
+
+export const isValidYoutubeChannel = (
+  channel: string,
+): channel is YoutubeChannel => {
+  return YOUTUBE_CHANNELS.includes(channel as YoutubeChannel);
+};

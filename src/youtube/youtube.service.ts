@@ -11,12 +11,36 @@ export interface YouTubeVideo {
   youtubeId: string;
   /** Title of the video */
   title: string;
+  /** Description of the video */
+  description: string;
   /** Upload date of the video */
   uploadDate: Date;
   /** Duration of the video in seconds */
   length: number;
   /** URL of the highest quality thumbnail available */
   thumbnail: string;
+}
+
+/**
+ * Represents a channel fetched from YouTube API with essential metadata.
+ * @interface YouTubeChannel
+ */
+export interface YouTubeChannel {
+  /** Unique identifier of the channel on YouTube */
+  id: string;
+  /** Name of the channel */
+  name: string;
+  /** Description of the channel */
+  description: string;
+  /** URL of the channel's thumbnail */
+  thumbnailUrl: string;
+  /** Social media links from channel description */
+  socialLinks: {
+    instagram?: string;
+    twitter?: string;
+    facebook?: string;
+    website?: string;
+  };
 }
 
 /**
@@ -207,6 +231,7 @@ export class YouTubeService {
       return (detailsResponse.data.items ?? []).map((item) => ({
         youtubeId: item.id!,
         title: item.snippet!.title!,
+        description: item.snippet!.description!,
         uploadDate: new Date(item.snippet!.publishedAt!),
         length: this.parseDuration(item.contentDetails!.duration!),
         thumbnail:
@@ -257,5 +282,138 @@ export class YouTubeService {
       used: this.quotaUsed,
       total: YouTubeService.DAILY_QUOTA_LIMIT,
     };
+  }
+
+  /**
+   * Get channel information by channel name
+   */
+  async getChannelInfo(channelName: string): Promise<YouTubeChannel> {
+    try {
+      const searchResponse = await this.youtube.search.list({
+        part: ['snippet'],
+        q: channelName,
+        type: ['channel'],
+        maxResults: 1,
+        key: this.configService.get('YOUTUBE_API_KEY'),
+      });
+
+      this.quotaUsed += 100;
+
+      if (!searchResponse.data.items?.length) {
+        throw new Error(`Channel ${channelName} not found`);
+      }
+
+      const channelId = searchResponse.data.items[0].id.channelId;
+      const channelResponse = await this.youtube.channels.list({
+        part: ['snippet', 'brandingSettings'],
+        id: [channelId],
+        key: this.configService.get('YOUTUBE_API_KEY'),
+      });
+
+      this.quotaUsed += 1;
+
+      if (!channelResponse.data.items?.length) {
+        throw new Error(`Channel ${channelName} details not found`);
+      }
+
+      const channel = channelResponse.data.items[0];
+      const description = channel.snippet.description;
+
+      // Extract social media links from description
+      const socialLinks = {
+        instagram: this.extractSocialLink(description, 'instagram.com'),
+        twitter: this.extractSocialLink(description, 'twitter.com'),
+        facebook: this.extractSocialLink(description, 'facebook.com'),
+        website: this.extractWebsiteLink(description),
+      };
+
+      return {
+        id: channel.id,
+        name: channel.snippet.title,
+        description: channel.snippet.description,
+        thumbnailUrl: channel.snippet.thumbnails.high?.url || '',
+        socialLinks,
+      };
+    } catch (error) {
+      this.logger.error(
+        `Error getting channel info for ${channelName}:`,
+        error,
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Extracts social media link from channel description
+   * @private
+   */
+  private extractSocialLink(
+    description: string,
+    domain: string,
+  ): string | undefined {
+    const regex = new RegExp(
+      `https?:\\/\\/(?:www\\.)?${domain.replace('.', '\\.')}\\S+`,
+      'i',
+    );
+    const match = description.match(regex);
+    return match ? match[0] : undefined;
+  }
+
+  /**
+   * Extracts website link from channel description
+   * @private
+   */
+  private extractWebsiteLink(description: string): string | undefined {
+    const regex =
+      /https?:\/\/(?!(?:www\.)?(instagram|twitter|facebook)\.com)\S+/i;
+    const match = description.match(regex);
+    return match ? match[0] : undefined;
+  }
+
+  /**
+   * Get videos from a specific channel
+   */
+  async getChannelVideos(channelId: string): Promise<YouTubeVideo[]> {
+    try {
+      const searchResponse = await this.youtube.search.list({
+        part: ['snippet'],
+        channelId,
+        type: ['video'],
+        maxResults: 50,
+        order: 'date',
+        key: this.configService.get('YOUTUBE_API_KEY'),
+      });
+
+      this.quotaUsed += 100;
+
+      if (!searchResponse.data.items?.length) {
+        return [];
+      }
+
+      const videoIds = searchResponse.data.items.map((item) => item.id.videoId);
+
+      const videosResponse = await this.youtube.videos.list({
+        part: ['contentDetails', 'snippet'],
+        id: videoIds,
+        key: this.configService.get('YOUTUBE_API_KEY'),
+      });
+
+      this.quotaUsed += 1;
+
+      return (videosResponse.data.items || []).map((video) => ({
+        youtubeId: video.id,
+        title: video.snippet.title,
+        description: video.snippet.description,
+        uploadDate: new Date(video.snippet.publishedAt),
+        length: this.parseDuration(video.contentDetails.duration),
+        thumbnail: video.snippet.thumbnails.high?.url || '',
+      }));
+    } catch (error) {
+      this.logger.error(
+        `Error getting videos for channel ${channelId}:`,
+        error,
+      );
+      throw error;
+    }
   }
 }

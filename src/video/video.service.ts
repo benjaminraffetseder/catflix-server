@@ -1,38 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
+import { YouTubeService } from '../youtube/youtube.service';
 import { GetVideosDto } from './dto/get-videos.dto';
 import { CategoryRepository } from './repositories/category.repository';
 import { VideoRepository } from './repositories/video.repository';
-import { YouTubeService } from './services/youtube.service';
-
-const CATEGORIES = [
-  {
-    title: 'Birds',
-    query: 'videos for cats to watch birds',
-  },
-  {
-    title: 'Fish',
-    query: 'aquarium for cats',
-  },
-  {
-    title: 'Mice',
-    query: 'mice to watch for cats',
-  },
-  {
-    title: 'Rabbits',
-    query: 'rabbits to watch for cats',
-  },
-  {
-    title: 'Forests',
-    query: 'forest movies for cats',
-  },
-] as const;
 
 @Injectable()
 export class VideoService {
   private readonly logger = new Logger(VideoService.name);
-  private isJobRunning = false;
 
   constructor(
     @InjectRepository(VideoRepository)
@@ -42,58 +17,14 @@ export class VideoService {
     private readonly youtubeService: YouTubeService,
   ) {}
 
-  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT, {
-    name: 'fetchVideos',
-    timeZone: 'UTC',
-  })
-  async fetchAndStoreVideos(): Promise<void> {
-    if (this.isJobRunning) {
-      this.logger.warn('Previous job still running, skipping...');
-      return;
-    }
-
-    this.isJobRunning = true;
-    try {
-      // Check YouTube quota before starting
-      const { used, total } = this.youtubeService.getCurrentQuotaUsage();
-      if (used >= total * 0.9) {
-        // 90% quota threshold
-        this.logger.warn('YouTube quota nearly exhausted, skipping fetch');
-        return;
-      }
-
-      for (const category of CATEGORIES) {
-        try {
-          await this.fetchVideosForCategory(category);
-        } catch (categoryError) {
-          this.logger.error(
-            `Error fetching category ${category.title}:`,
-            categoryError,
-          );
-          // Continue with next category instead of failing completely
-          continue;
-        }
-      }
-
-      this.logger.log(
-        'Successfully fetched and stored videos for all categories',
-      );
-    } catch (error) {
-      this.logger.error('Critical error in video fetch job:', error);
-      // Here you might want to add monitoring/alerting
-    } finally {
-      this.isJobRunning = false;
-    }
-  }
-
-  private async fetchVideosForCategory(
-    category: (typeof CATEGORIES)[number],
+  async fetchAndStoreVideos(
+    query: string,
+    categoryTitle: string,
   ): Promise<void> {
     try {
-      const savedCategory = await this.categoryRepository.findOrCreate(
-        category.title,
-      );
-      const videos = await this.youtubeService.searchVideos(category.query);
+      const savedCategory =
+        await this.categoryRepository.findOrCreate(categoryTitle);
+      const videos = await this.youtubeService.searchVideos(query);
 
       for (const video of videos) {
         try {
@@ -105,6 +36,7 @@ export class VideoService {
             await this.videoRepository.save({
               ...existingVideo,
               title: video.title,
+              description: video.description,
               uploadDate: video.uploadDate,
               length: video.length,
               categoryId: savedCategory.id,
@@ -112,6 +44,7 @@ export class VideoService {
           } else {
             const newVideo = this.videoRepository.create({
               title: video.title,
+              description: video.description,
               categoryId: savedCategory.id,
               uploadDate: video.uploadDate,
               length: video.length,
@@ -129,11 +62,11 @@ export class VideoService {
       }
 
       this.logger.log(
-        `Successfully fetched videos for category: ${category.title}`,
+        `Successfully fetched videos for category: ${categoryTitle}`,
       );
     } catch (error) {
       this.logger.error(
-        `Error fetching videos for category ${category.title}:`,
+        `Error fetching videos for category ${categoryTitle}:`,
         error,
       );
       throw error;
@@ -166,6 +99,7 @@ export class VideoService {
       select: {
         id: true,
         title: true,
+        description: true,
         uploadDate: true,
         length: true,
         category: { id: true, title: true },
@@ -176,10 +110,5 @@ export class VideoService {
 
   async getCategories() {
     return this.categoryRepository.getCategoriesWithVideoCount();
-  }
-
-  async triggerFetchAndStore() {
-    await this.fetchAndStoreVideos();
-    return { message: 'Videos fetched and stored successfully.' };
   }
 }
