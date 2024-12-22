@@ -26,10 +26,6 @@ export class ChannelRepository extends Repository<Channel> {
         'channel.name',
         'channel.description',
         'channel.thumbnailUrl',
-        'channel.instagramUrl',
-        'channel.twitterUrl',
-        'channel.facebookUrl',
-        'channel.websiteUrl',
         'channel.isActive',
         'channel.lastFetchedAt',
       ])
