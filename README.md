@@ -1,99 +1,131 @@
 <p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
+  <h1>🐱 Catflix Server</h1>
+  <p>Backend service for Catflix - A Netflix-inspired platform for your cat</p>
 </p>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## Overview
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Catflix Server is a backend service built with NestJS that powers the Catflix platform. It integrates with YouTube's API to fetch and manage cat videos, providing a curated streaming experience through a REST API.
 
-## Description
+### Tech Stack
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- **Framework**: NestJS (TypeScript)
+- **Database**: PostgreSQL with TypeORM
+- **API Integration**: YouTube Data API v3
+- **Documentation**: Swagger/OpenAPI
+- **Testing**: Jest
+- **Task Scheduling**: @nestjs/schedule with cron jobs
 
-## Project setup
+## Getting Started
 
+### Prerequisites
+
+- Node.js (v18 or higher)
+- pnpm package manager
+- PostgreSQL database
+- YouTube Data API key
+- Docker
+
+### Environment Setup
+
+1. Clone the repository:
+```bash
+$ git clone https://github.com/benjaminraffetseder/catflix-server.git
+$ cd catflix-server
+```
+
+2. Install dependencies:
 ```bash
 $ pnpm install
 ```
 
-## Compile and run the project
+3. Configure environment variables:
+   - Copy `.env.example` to `.env`
+   ```bash
+   $ cp .env.example .env
+   ```	
+   - Fill in the required variables:
+     ```
+     YOUTUBE_API_KEY=your_youtube_api_key
+     DATABASE_URL=postgresql://user:password@localhost:5432/catflix
+     PORT=3000
+     NODE_ENV=development
+     MANUAL_FETCH_API_KEY=your_api_key_for_manual_fetching
+     ```
 
+4. Set up the database:
 ```bash
-# development
-$ pnpm run start
-
-# watch mode
-$ pnpm run start:dev
-
-# production mode
-$ pnpm run start:prod
+# Run TypeORM migrations
+$ pnpm run migration:run
 ```
 
-## Run tests
+## Development
 
 ```bash
-# unit tests
+# Start in development mode with hot-reload
+$ pnpm run start:dev
+
+# Run unit tests
 $ pnpm run test
 
-# e2e tests
+# Run e2e tests
 $ pnpm run test:e2e
 
-# test coverage
+# Check test coverage
 $ pnpm run test:cov
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+## Database Migrations
 
 ```bash
-$ pnpm install -g mau
-$ mau deploy
+# Generate a new migration
+$ pnpm run migration:generate src/migrations/MigrationName
+
+# Create a new empty migration
+$ pnpm run migration:create src/migrations/MigrationName
+
+# Run pending migrations
+$ pnpm run migration:run
+
+# Revert last migration
+$ pnpm run migration:revert
+
+# Show migration status
+$ pnpm run migration:show
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## API Documentation
 
-## Resources
+Once the server is running, you can access the Swagger documentation at:
+```
+http://localhost:3000/api
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+You can also download the JSON documentation at:
+```
+http://localhost:3000/api-json
+```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## Project Structure
 
-## Support
+```
+src/
+├── config/          # Configuration files and environment setup
+├── entities/        # TypeORM entities
+├── migrations/      # Database migrations
+├── middleware/      # HTTP middleware
+├── video/           # Video module (Fetching and storing YT video data)
+└── main.ts          # Application entry point
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## Contributing
 
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feat/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feat/amazing-feature`)
+5. Open a Pull Request
 
 ## License
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+This project is [MIT licensed](LICENSE).
