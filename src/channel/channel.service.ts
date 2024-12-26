@@ -145,18 +145,7 @@ export class ChannelService {
   }
 
   async getChannel(id: string) {
-    return this.channelRepository.findOne({
-      where: { id },
-      relations: ['videos'],
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        thumbnailUrl: true,
-        isActive: true,
-        lastFetchedAt: true,
-      },
-    });
+    return this.channelRepository.getChannelById(id);
   }
 
   async triggerFetchAndStore() {

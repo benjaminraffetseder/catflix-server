@@ -18,6 +18,7 @@ describe('ChannelService', () => {
     getChannels: jest.fn(),
     findOne: jest.fn(),
     save: jest.fn(),
+    getChannelById: jest.fn(),
   };
 
   const mockVideoRepository = {
@@ -104,26 +105,29 @@ describe('ChannelService', () => {
       const mockChannel = {
         id: channelId,
         name: 'Test Channel',
-        videos: [],
+        description: 'Test Description',
+        thumbnailUrl: 'http://example.com/thumb.jpg',
+        isActive: true,
+        lastFetchedAt: new Date(),
+        videoCount: 5,
       };
 
-      mockChannelRepository.findOne.mockResolvedValue(mockChannel);
+      mockChannelRepository.getChannelById.mockResolvedValue(mockChannel);
 
       const result = await service.getChannel(channelId);
 
       expect(result).toEqual(mockChannel);
-      expect(channelRepository.findOne).toHaveBeenCalledWith({
-        where: { id: channelId },
-        relations: ['videos'],
-        select: {
-          id: true,
-          name: true,
-          description: true,
-          thumbnailUrl: true,
-          isActive: true,
-          lastFetchedAt: true,
-        },
-      });
+      expect(channelRepository.getChannelById).toHaveBeenCalledWith(channelId);
+    });
+
+    it('should return null when channel is not found', async () => {
+      const channelId = 'non-existent-id';
+      mockChannelRepository.getChannelById.mockResolvedValue(null);
+
+      const result = await service.getChannel(channelId);
+
+      expect(result).toBeNull();
+      expect(channelRepository.getChannelById).toHaveBeenCalledWith(channelId);
     });
   });
 
