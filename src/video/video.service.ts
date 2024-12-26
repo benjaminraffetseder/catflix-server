@@ -95,7 +95,7 @@ export class VideoService {
   async getVideo(id: string) {
     return this.videoRepository.findOne({
       where: { id },
-      relations: ['category'],
+      relations: ['category', 'channel'],
       select: {
         id: true,
         title: true,
@@ -104,6 +104,7 @@ export class VideoService {
         length: true,
         category: { id: true, title: true },
         youtubeId: true,
+        channel: { id: true, name: true },
       },
     });
   }
