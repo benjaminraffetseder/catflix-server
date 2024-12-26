@@ -76,6 +76,8 @@ export class YouTubeService {
   private static readonly VIDEO_DETAILS_COST = 1;
   /** Minimum delay between API requests in milliseconds */
   private static readonly REQUEST_DELAY_MS = 100;
+  /** Minimum video length in seconds (15 minutes) */
+  private static readonly MIN_VIDEO_LENGTH = 15 * 60;
 
   /** Current quota units used today */
   private quotaUsed = 0;
@@ -228,17 +230,22 @@ export class YouTubeService {
         id: videoIds,
       });
 
-      return (detailsResponse.data.items ?? []).map((item) => ({
-        youtubeId: item.id!,
-        title: item.snippet!.title!,
-        description: item.snippet!.description!,
-        uploadDate: new Date(item.snippet!.publishedAt!),
-        length: this.parseDuration(item.contentDetails!.duration!),
-        thumbnail:
-          item.snippet!.thumbnails?.maxres?.url ||
-          item.snippet!.thumbnails?.high?.url ||
-          `https://img.youtube.com/vi/${item.id}/hqdefault.jpg`,
-      }));
+      return (detailsResponse.data.items ?? [])
+        .map((item) => {
+          const length = this.parseDuration(item.contentDetails!.duration!);
+          return {
+            youtubeId: item.id!,
+            title: item.snippet!.title!,
+            description: item.snippet!.description!,
+            uploadDate: new Date(item.snippet!.publishedAt!),
+            length,
+            thumbnail:
+              item.snippet!.thumbnails?.maxres?.url ||
+              item.snippet!.thumbnails?.high?.url ||
+              `https://img.youtube.com/vi/${item.id}/hqdefault.jpg`,
+          };
+        })
+        .filter((video) => video.length >= YouTubeService.MIN_VIDEO_LENGTH);
     } catch (error) {
       this.logger.error('Error fetching videos from YouTube:', error);
       throw error;
@@ -400,14 +407,19 @@ export class YouTubeService {
 
       this.quotaUsed += 1;
 
-      return (videosResponse.data.items || []).map((video) => ({
-        youtubeId: video.id,
-        title: video.snippet.title,
-        description: video.snippet.description,
-        uploadDate: new Date(video.snippet.publishedAt),
-        length: this.parseDuration(video.contentDetails.duration),
-        thumbnail: video.snippet.thumbnails.high?.url || '',
-      }));
+      return (videosResponse.data.items || [])
+        .map((video) => {
+          const length = this.parseDuration(video.contentDetails.duration);
+          return {
+            youtubeId: video.id,
+            title: video.snippet.title,
+            description: video.snippet.description,
+            uploadDate: new Date(video.snippet.publishedAt),
+            length,
+            thumbnail: video.snippet.thumbnails.high?.url || '',
+          };
+        })
+        .filter((video) => video.length >= YouTubeService.MIN_VIDEO_LENGTH);
     } catch (error) {
       this.logger.error(
         `Error getting videos for channel ${channelId}:`,
