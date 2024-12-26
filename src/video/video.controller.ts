@@ -6,16 +6,12 @@ import {
   ParseUUIDPipe,
   Query,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { GetVideosDto } from './dto/get-videos.dto';
 import { VideoService } from './video.service';
 
 @Controller('videos')
 export class VideoController {
-  constructor(
-    private readonly videoService: VideoService,
-    private readonly configService: ConfigService,
-  ) {}
+  constructor(private readonly videoService: VideoService) {}
 
   @Get()
   async getVideos(@Query() query: GetVideosDto) {

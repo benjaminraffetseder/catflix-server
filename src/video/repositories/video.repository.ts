@@ -4,6 +4,7 @@ import { Video } from '../entities/video.entity';
 
 interface GetVideosParams {
   categoryId?: string;
+  channelId?: string;
   uploadDateFrom?: Date;
   uploadDateTo?: Date;
   minLength?: number;
@@ -28,6 +29,7 @@ export class VideoRepository extends Repository<Video> {
   async getVideos(params: GetVideosParams = {}): Promise<[Video[], number]> {
     const {
       categoryId,
+      channelId,
       uploadDateFrom,
       uploadDateTo,
       minLength,
@@ -39,13 +41,13 @@ export class VideoRepository extends Repository<Video> {
       pageSize = 20,
     } = params;
 
-    const query = this.createQueryBuilder('video').leftJoinAndSelect(
-      'video.category',
-      'category',
-    );
+    const query = this.createQueryBuilder('video')
+      .leftJoinAndSelect('video.category', 'category')
+      .leftJoinAndSelect('video.channel', 'channel');
 
     this.applyFilters(query, {
       categoryId,
+      channelId,
       uploadDateFrom,
       uploadDateTo,
       minLength,
@@ -67,6 +69,7 @@ export class VideoRepository extends Repository<Video> {
   ): void {
     const {
       categoryId,
+      channelId,
       uploadDateFrom,
       uploadDateTo,
       minLength,
@@ -76,6 +79,10 @@ export class VideoRepository extends Repository<Video> {
 
     if (categoryId) {
       query.andWhere('video.categoryId = :categoryId', { categoryId });
+    }
+
+    if (channelId) {
+      query.andWhere('video.channelId = :channelId', { channelId });
     }
 
     if (uploadDateFrom) {

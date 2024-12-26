@@ -16,6 +16,10 @@ export class GetVideosDto {
   categoryId?: string;
 
   @IsOptional()
+  @IsUUID()
+  channelId?: string;
+
+  @IsOptional()
   @IsDateString()
   uploadDateFrom?: string;
 
