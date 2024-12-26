@@ -45,6 +45,7 @@ export class ChannelRepository extends Repository<Channel> {
         'channel.thumbnailUrl',
         'channel.isActive',
         'channel.lastFetchedAt',
+        'channel.youtubeChannelId',
       ])
       .addSelect('COUNT(DISTINCT video.id)', 'videoCount')
       .groupBy('channel.id');
@@ -69,8 +70,6 @@ export class ChannelRepository extends Repository<Channel> {
           .where('channel.id = :id', { id: channel.id })
           .select('COUNT(DISTINCT video.id)', 'videoCount')
           .getRawOne();
-
-        console.log(`Channel ${channel.id} has ${videoCount} videos`);
 
         return {
           ...channel,
@@ -117,6 +116,7 @@ export class ChannelRepository extends Repository<Channel> {
         'channel.thumbnailUrl',
         'channel.isActive',
         'channel.lastFetchedAt',
+        'channel.youtubeChannelId',
       ])
       .where('channel.id = :id', { id })
       .addSelect('COUNT(DISTINCT video.id)', 'videoCount')
