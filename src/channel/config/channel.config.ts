@@ -7,6 +7,7 @@ export const YOUTUBE_CHANNELS = [
   'patsysgarden',
   'CatFlixVideosforCats',
   'RedSquirrelStudios',
+  'BirdsForCatsTV-x5p',
 ] as const;
 
 export type YoutubeChannel = (typeof YOUTUBE_CHANNELS)[number];
