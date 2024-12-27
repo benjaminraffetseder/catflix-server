@@ -155,6 +155,10 @@ describe('ChannelService', () => {
         name: 'Test Channel',
         description: 'Test Description',
         thumbnailUrl: 'http://example.com/thumb.jpg',
+        isActive: true,
+        lastFetchedAt: new Date(),
+        videoCount: 5,
+        youtubeId: '123e4567-e89b-12d3-a456-426614174000',
       };
 
       const mockCategory = {
@@ -166,13 +170,18 @@ describe('ChannelService', () => {
         youtubeId: 'video1',
         title: 'Test Video',
         uploadDate: new Date(),
+        description: 'Test Description',
         length: 120,
       };
 
       mockYouTubeService.getChannelInfo.mockResolvedValue(mockChannel);
       mockChannelRepository.findOrCreate.mockResolvedValue(mockChannel);
       mockCategoryRepository.findOrCreate.mockResolvedValue(mockCategory);
-      mockYouTubeService.getChannelVideos.mockResolvedValue([mockVideo]);
+      mockYouTubeService.getChannelVideos.mockResolvedValue({
+        videos: [mockVideo],
+        totalResults: 1,
+        nextPageToken: null,
+      });
       mockVideoRepository.findByYoutubeId.mockResolvedValue(null);
       mockVideoRepository.create.mockReturnValue(mockVideo);
       mockVideoRepository.save.mockResolvedValue(mockVideo);

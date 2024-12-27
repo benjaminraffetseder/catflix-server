@@ -97,7 +97,7 @@ describe('VideoService', () => {
       expect(result).toEqual(mockVideo);
       expect(videoRepository.findOne).toHaveBeenCalledWith({
         where: { id: videoId },
-        relations: ['category'],
+        relations: ['category', 'channel'],
         select: {
           id: true,
           title: true,
@@ -105,6 +105,7 @@ describe('VideoService', () => {
           uploadDate: true,
           length: true,
           category: { id: true, title: true },
+          channel: { id: true, name: true },
           youtubeId: true,
         },
       });

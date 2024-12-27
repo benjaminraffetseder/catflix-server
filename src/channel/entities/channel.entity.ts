@@ -27,6 +27,15 @@ export class Channel {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 
+  @Column({ default: 0 })
+  totalVideos: number;
+
+  @Column({ nullable: true })
+  lastFetchedVideoId: string;
+
+  @Column({ default: false })
+  isFullyIndexed: boolean;
+
   @OneToMany(() => Video, (video) => video.channel)
   videos: Video[];
 }

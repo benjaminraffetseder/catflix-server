@@ -197,25 +197,36 @@ export class YouTubeService {
    * const catVideos = await youtubeService.searchVideos('cats', 5);
    * ```
    */
-  async searchVideos(query: string, maxResults = 50): Promise<YouTubeVideo[]> {
+  async searchVideos(
+    query: string,
+    maxResults = 50,
+    pageToken?: string,
+    accumulatedResults: YouTubeVideo[] = [],
+  ): Promise<YouTubeVideo[]> {
     try {
-      // Check if we have enough quota for the worst case (one search + maxResults video details)
-      this.checkQuota(1, maxResults);
+      // Calculate remaining results needed
+      const remainingResults = maxResults - accumulatedResults.length;
+      // Limit per page (YouTube max is 50)
+      const pageSize = Math.min(remainingResults, 50);
+
+      // Check if we have enough quota for the worst case (one search + pageSize video details)
+      this.checkQuota(1, pageSize);
 
       // Enforce rate limit before search request
       await this.enforceRateLimit();
 
       const searchResponse = await this.youtube.search.list({
         part: ['snippet'],
-        maxResults,
+        maxResults: pageSize,
         q: query,
         type: ['video'],
         videoEmbeddable: 'true',
         videoSyndicated: 'true',
+        pageToken,
       });
 
       if (!searchResponse.data.items?.length) {
-        return [];
+        return accumulatedResults;
       }
 
       const videoIds = searchResponse.data.items
@@ -230,7 +241,7 @@ export class YouTubeService {
         id: videoIds,
       });
 
-      return (detailsResponse.data.items ?? [])
+      const newVideos = (detailsResponse.data.items ?? [])
         .map((item) => {
           const length = this.parseDuration(item.contentDetails!.duration!);
           return {
@@ -246,6 +257,25 @@ export class YouTubeService {
           };
         })
         .filter((video) => video.length >= YouTubeService.MIN_VIDEO_LENGTH);
+
+      const allResults = [...accumulatedResults, ...newVideos];
+
+      // If we haven't reached maxResults and there are more pages, continue fetching
+      if (
+        allResults.length < maxResults &&
+        searchResponse.data.nextPageToken &&
+        searchResponse.data.pageInfo?.totalResults! > allResults.length
+      ) {
+        return this.searchVideos(
+          query,
+          maxResults,
+          searchResponse.data.nextPageToken,
+          allResults,
+        );
+      }
+
+      // Return results, trimmed to maxResults
+      return allResults.slice(0, maxResults);
     } catch (error) {
       this.logger.error('Error fetching videos from YouTube:', error);
       throw error;
@@ -380,7 +410,15 @@ export class YouTubeService {
   /**
    * Get videos from a specific channel
    */
-  async getChannelVideos(channelId: string): Promise<YouTubeVideo[]> {
+  async getChannelVideos(
+    channelId: string,
+    pageToken?: string,
+    lastFetchedVideoId?: string,
+  ): Promise<{
+    videos: YouTubeVideo[];
+    nextPageToken?: string;
+    totalResults: number;
+  }> {
     try {
       const searchResponse = await this.youtube.search.list({
         part: ['snippet'],
@@ -388,16 +426,35 @@ export class YouTubeService {
         type: ['video'],
         maxResults: 50,
         order: 'date',
+        pageToken,
         key: this.configService.get('YOUTUBE_API_KEY'),
       });
 
       this.quotaUsed += 100;
 
       if (!searchResponse.data.items?.length) {
-        return [];
+        return {
+          videos: [],
+          totalResults: searchResponse.data.pageInfo?.totalResults || 0,
+        };
       }
 
       const videoIds = searchResponse.data.items.map((item) => item.id.videoId);
+
+      // If we've reached the last fetched video, stop here
+      if (lastFetchedVideoId) {
+        const lastFetchedIndex = videoIds.indexOf(lastFetchedVideoId);
+        if (lastFetchedIndex !== -1) {
+          // Only take videos up to the last fetched one
+          videoIds.splice(lastFetchedIndex);
+          if (videoIds.length === 0) {
+            return {
+              videos: [],
+              totalResults: searchResponse.data.pageInfo?.totalResults || 0,
+            };
+          }
+        }
+      }
 
       const videosResponse = await this.youtube.videos.list({
         part: ['contentDetails', 'snippet'],
@@ -407,7 +464,7 @@ export class YouTubeService {
 
       this.quotaUsed += 1;
 
-      return (videosResponse.data.items || [])
+      const videos = (videosResponse.data.items || [])
         .map((video) => {
           const length = this.parseDuration(video.contentDetails.duration);
           return {
@@ -420,6 +477,12 @@ export class YouTubeService {
           };
         })
         .filter((video) => video.length >= YouTubeService.MIN_VIDEO_LENGTH);
+
+      return {
+        videos,
+        nextPageToken: searchResponse.data.nextPageToken,
+        totalResults: searchResponse.data.pageInfo?.totalResults || 0,
+      };
     } catch (error) {
       this.logger.error(
         `Error getting videos for channel ${channelId}:`,
