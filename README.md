@@ -1,160 +1,159 @@
+# Catflix Server
 
-# 🐱 Catflix Server
+A NestJS-based backend service for managing and serving curated cat videos from YouTube. This service handles video fetching, categorization, and delivery through a RESTful API.
 
-Backend service for Catflix - A Netflix-inspired platform for your cat
+## Features
 
-## Overview
+- YouTube video integration and management
+- Channel-based content organization
+- Automated video fetching and updates
+- RESTful API endpoints
+- Database seeding and management
+- Scheduled tasks support
+- PostgreSQL database integration
 
-Catflix Server is a backend service built with NestJS that powers the Catflix platform. It integrates with YouTube's API to fetch and manage cat videos, providing a curated streaming experience through a REST API.
+## Tech Stack
 
-### Tech Stack
+- NestJS (v10)
+- TypeScript
+- PostgreSQL with TypeORM
+- YouTube Data API v3
+- Class Validator & Transformer
+- Swagger/OpenAPI
+- Jest for testing
 
-- **Framework**: NestJS (TypeScript)
-- **Database**: PostgreSQL with TypeORM
-- **API Integration**: YouTube Data API v3
-- **Documentation**: Swagger/OpenAPI
-- **Testing**: Jest
+## Prerequisites
 
-## Getting Started
+- Node.js (Latest LTS version)
+- pnpm (v9.9.0 or higher)
+- PostgreSQL
+- YouTube API Key
 
-### Prerequisites
+## Installation
 
-- Node.js (v18 or higher)
-- pnpm package manager
-- PostgreSQL database
-- YouTube Data API key
-- Docker
-
-### Environment Setup
-
-1. Clone the repository:
-
-```bash
-git clone https://github.com/benjaminraffetseder/catflix-server.git
-cd catflix-server
-```
-
-2. Install dependencies:
+1. Install dependencies:
 
 ```bash
 pnpm install
 ```
 
-3. Configure environment variables:
-   - Copy `.env.example` to `.env`
-
-   ```bash
-   cp .env.example .env
-   ```
-
-   - Fill in the required variables:
-
-     ```
-     YOUTUBE_API_KEY=your_youtube_api_key
-     DATABASE_URL=postgresql://user:password@localhost:5432/catflix
-     PORT=3000
-     NODE_ENV=development
-     MANUAL_FETCH_API_KEY=change-me-please
-     ```
-
-4. Start the database:
+2. Configure environment variables:
 
 ```bash
-# Start PostgreSQL in Docker
-$ ./start-database.sh
+cp .env.example .env
 ```
 
-5. Set up the database:
+Edit `.env` with your configuration:
+
+- Database credentials
+- YouTube API key
+- Other environment-specific settings
+
+3. Start the database:
 
 ```bash
-# Run TypeORM migrations
-$ pnpm run migration:run
+./start-database.sh
 ```
 
-## Development
+4. Run database migrations:
 
 ```bash
-# Start in development mode with hot-reload
-$ pnpm run start:dev
-
-# Run unit tests
-$ pnpm run test
-
-# Run e2e tests
-$ pnpm run test:e2e
-
-# Check test coverage
-$ pnpm run test:cov
+pnpm migration:run
 ```
 
-## Database Migrations
+## Running the Application
+
+### Development
 
 ```bash
-# Generate a new migration
-$ pnpm run migration:generate src/migrations/MigrationName
-
-# Create a new empty migration
-$ pnpm run migration:create src/migrations/MigrationName
-
-# Run pending migrations
-$ pnpm run migration:run
-
-# Revert last migration
-$ pnpm run migration:revert
-
-# Show migration status
-$ pnpm run migration:show
+pnpm start:dev
 ```
 
-## Database Seeding
-
-The project includes a seeding system to help maintain consistent development data. For detailed information about seeding, see [Database Seeders](src/database/seeders/README.md).
+### Production
 
 ```bash
-# Seed the database with initial data
-$ pnpm run seed
-
-# Clean the database
-$ pnpm run seed:clean
-
-# Export current data to CSV files
-$ pnpm run seed:export
+pnpm build
+pnpm start:prod
 ```
 
-## API Documentation
+## Database Management
 
-Once the server is running, you can access the Swagger documentation at:
+### Migrations
 
-```
-http://localhost:3000/api
-```
+- Generate: `pnpm migration:generate`
+- Run: `pnpm migration:run`
+- Revert: `pnpm migration:revert`
+- Show status: `pnpm migration:show`
 
-You can also download the JSON documentation at:
+### Seeding
 
-```
-http://localhost:3000/api-json
-```
+- Seed database: `pnpm seed`
+- Clean data: `pnpm seed:clean`
+- Export data: `pnpm seed:export`
 
 ## Project Structure
 
 ```
 src/
-├── config/          # Configuration files and environment setup
-├── entities/        # TypeORM entities
-├── migrations/      # Database migrations
-├── middleware/      # HTTP middleware
-├── video/          # Video module (YouTube video data management)
-└── main.ts         # Application entry point
+├── channel/          # Channel management module
+├── video/            # Video management module
+├── youtube/          # YouTube API integration
+├── config/          # Configuration files
+├── database/        # Database related files
+│   └── seeders/    # Database seeding
+├── middleware/      # Custom middleware
+└── migrations/      # TypeORM migrations
 ```
 
-## Contributing
+## API Modules
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feat/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feat/amazing-feature`)
-5. Open a Pull Request
+### Video Module
+
+- Video management and retrieval
+- Category-based organization
+- Pagination and filtering support
+
+### Channel Module
+
+- Channel information management
+- Video-channel relationships
+- Channel metadata handling
+
+## Testing
+
+```bash
+# Unit tests
+pnpm test
+
+# e2e tests
+pnpm test:e2e
+
+# Test coverage
+pnpm test:cov
+```
+
+## Development
+
+### Code Style
+
+The project uses ESLint and Prettier for code formatting:
+
+```bash
+# Format code
+pnpm format
+
+# Lint code
+pnpm lint
+```
+
+### API Documentation
+
+API documentation is available through Swagger UI at `/api` when running the server.
 
 ## License
 
 This project is [MIT licensed](LICENSE).
+
+## About
+
+Created with ♥️ by me, inspired by my cat's love for wildlife videos. Feel free to contribute or report issues!
