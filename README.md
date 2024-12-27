@@ -1,7 +1,7 @@
-<p align="center">
-  <h1>🐱 Catflix Server</h1>
-  <p>Backend service for Catflix - A Netflix-inspired platform for your cat</p>
-</p>
+
+# 🐱 Catflix Server
+
+Backend service for Catflix - A Netflix-inspired platform for your cat
 
 ## Overview
 
@@ -57,7 +57,14 @@ pnpm install
      MANUAL_FETCH_API_KEY=change-me-please
      ```
 
-4. Set up the database:
+4. Start the database:
+
+```bash
+# Start PostgreSQL in Docker
+$ ./start-database.sh
+```
+
+5. Set up the database:
 
 ```bash
 # Run TypeORM migrations
