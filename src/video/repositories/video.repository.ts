@@ -107,4 +107,33 @@ export class VideoRepository extends Repository<Video> {
       });
     }
   }
+
+  async getRandomVideo(): Promise<Video | null> {
+    // First get a random ID
+    const randomVideo = await this.createQueryBuilder('video')
+      .select('video.id')
+      .orderBy('RANDOM()')
+      .take(1)
+      .getOne();
+
+    if (!randomVideo) {
+      return null;
+    }
+
+    // Then fetch the complete video with its relations
+    return this.findOne({
+      where: { id: randomVideo.id },
+      relations: ['category', 'channel'],
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        uploadDate: true,
+        length: true,
+        category: { id: true, title: true },
+        youtubeId: true,
+        channel: { id: true, name: true },
+      },
+    });
+  }
 }

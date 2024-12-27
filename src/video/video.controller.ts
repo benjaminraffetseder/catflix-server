@@ -23,6 +23,15 @@ export class VideoController {
     return this.videoService.getCategories();
   }
 
+  @Get('random')
+  async getRandomVideo() {
+    const video = await this.videoService.getRandomVideo();
+    if (!video) {
+      throw new NotFoundException('No videos found in the database');
+    }
+    return video;
+  }
+
   @Get(':id')
   async getVideo(@Param('id', ParseUUIDPipe) id: string) {
     const video = await this.videoService.getVideo(id);

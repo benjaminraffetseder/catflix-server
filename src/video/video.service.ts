@@ -112,4 +112,8 @@ export class VideoService {
   async getCategories() {
     return this.categoryRepository.getCategoriesWithVideoCount();
   }
+
+  async getRandomVideo() {
+    return this.videoRepository.getRandomVideo();
+  }
 }
